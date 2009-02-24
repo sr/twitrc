@@ -15,19 +15,40 @@ module Ircd
   end
   
   def receive_data(data)
+    if data.match(/\n{1}/)
+      data.split(/\r?\n/).each do |x| process_data(x) end
+    else
+      process_data(data.strip)
+    end
+  end
+  
+  def process_data(data)
+    data.strip
     puts "<< #{data}"
-    
     case data
       when /^PRIVMSG (.*?) :(.*)$/
         @twit.update($2)
-      when /^USER (.*?) /
+      when /^USER (.*?) /m
         @username = $1
+        puts "#{@username} - #{@pass} - #{@nickname}"
         @twit = Twitter::Base.new(@username, @pass)
         connect_user()
-      when /^PASS (.*)$/
+      when /^PASS (.*)/
         @pass = $1
-      when /^NICK (.*)$/
+      when /^NICK (.*)/
         @nickname = $1
+      when /^WHO \#twitter/
+        @twit.friends.each do |u|
+          send_data(":localhost 352 #{u.screen_name} #twitter #{u.screen_name} twitter localhost #{u.screen_name} H :0 #{u.name}")
+        end
+        servermsg("End of /WHO list.", 315, "#twitter")
+      when /^NAMES \#twitter/
+        names = String.new
+        @twit.friends.each do |u| 
+          names << "#{u.screen_name} "
+        end
+        servermsg("@twitter #{names}", 353, "#twitter")
+        servermsg("End of /NAMES list.", 366, "#twitter")
     end
   end
   
