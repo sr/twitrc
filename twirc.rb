@@ -89,6 +89,7 @@ module TwitRC
       @twit.timeline(:friends, :since => Time.now.in_time_zone("Eastern Time (US & Canada)") - 5.minutes).each do |u|
         privmsg(u.user.screen_name,CGI::unescapeHTML(u.text), "#twitter")
       end
+      send_data "ping :#{$servername}"
     end
   end
   
