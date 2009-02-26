@@ -17,7 +17,7 @@ module TwitRC
   end
   
   def receive_data(data)
-    data.match(/\n{1}/) ? data.split(/\r?\n/).each{|x|process_data(x)}:process_data(data.strip)
+    data.match(/\n/) ? data.split(/\r?\n/).each{|x|process_data(x)}:process_data(data.strip)
   end
   
   def process_data(data)
@@ -61,7 +61,7 @@ module TwitRC
   end
   
   def do_twitter_connection()
-    @twit = Twitter::Base.new(@username, @password)
+    @twit = Twitter::Base.new(@nickname, @password)
      rpl RPL_MOTDSTART, ":#{$servername} message of the day - "
      rpl RPL_MOTD, ":thank you for using this server"
      rpl RPL_ENDOFMOTD, ":End of /MOTD command"
@@ -71,7 +71,7 @@ module TwitRC
      @twit.friends.each do |u| 
        names << "#{u.screen_name} "
      end
-     rpl RPL_NAMREPLY, ":@twitter #{names}", "#twitter"
+     rpl RPL_NAMREPLY, ":@twitter @#{nickname} #{names}", "#twitter"
      rpl RPL_ENDOFNAMES, ":End of /NAMES list.", "#twitter"
       @twit.friends.each do |u|
         privmsg(u.screen_name,CGI::unescapeHTML(u.status.text),"#twitter")
