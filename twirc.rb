@@ -62,16 +62,16 @@ module TwitRC
   
   def do_twitter_connection()
     @twit = Twitter::Base.new(@nickname, @password)
-     rpl RPL_MOTDSTART, ":#{$servername} message of the day - "
-     rpl RPL_MOTD, ":thank you for using this server"
+     rpl RPL_MOTDSTART, ":- #{$servername} message of the day"
+     rpl RPL_MOTD, ":Thank you for using TwitRC"
      rpl RPL_ENDOFMOTD, ":End of /MOTD command"
      send_data ":#{@nickname}!#{$servername} JOIN :#twitter\n"
      send_data ":#{$sername} MODE #twitter +ns\n"
      names = ""
      @twit.friends.each do |u| 
-       names << "#{u.screen_name} "
+       names << " #{u.screen_name}"
      end
-     rpl RPL_NAMREPLY, ":@twitter @#{nickname} #{names}", "#twitter"
+     rpl RPL_NAMREPLY, ":@twitter @#{@nickname}#{names}", "@ #twitter"
      rpl RPL_ENDOFNAMES, ":End of /NAMES list.", "#twitter"
       @twit.friends.each do |u|
         privmsg(u.screen_name,CGI::unescapeHTML(u.status.text),"#twitter")
@@ -79,7 +79,6 @@ module TwitRC
   end
 
   def rpl(num, message, channel=nil)
-    #send_data ":localhost #{id} #{@nickname} #{channel} :#{message}\n"
     send_data ":#{$servername} #{num} #{@nickname} #{channel} #{message}\n"
   end
   
