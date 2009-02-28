@@ -86,7 +86,7 @@ module TwitRC
   end
 
   def rpl(num, message, channel=nil)
-    send_data ":#{$servername} #{num} #{@nickname}%s #{message}\n" % (" #{channel} " if !channel.nil?)
+    send_data ":#{$servername} #{num} #{@nickname}%s #{message}\n" % (" #{channel}" if !channel.nil?)
   end
   
   def initialize()
