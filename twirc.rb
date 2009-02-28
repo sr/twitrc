@@ -4,8 +4,9 @@ require 'twitter'
 require 'activesupport'
 require 'lib/irc_numconst'
 
-$debug = 1
+$debug = true
 $servername = "twitter.irc"
+
 module TwitRC
 @username = ""
 @password = ""
@@ -30,12 +31,10 @@ module TwitRC
   
   def irc_pass(password)
     @password = password
-    puts "recieved password #{password}"
   end
   
   def irc_nick(nickname)
     @nickname = nickname
-    puts "recieved nick #{nickname}"
   end
   
   def irc_user(username)
@@ -63,17 +62,18 @@ module TwitRC
   def do_twitter_connection()
     @twit = Twitter::Base.new(@nickname, @password)
      rpl RPL_MOTDSTART, ":- #{$servername} message of the day"
-     rpl RPL_MOTD, ":Thank you for using TwitRC"
+     rpl RPL_MOTD, ":- Thank you for using TwitRC"
      rpl RPL_ENDOFMOTD, ":End of /MOTD command"
      send_data ":#{@nickname}!#{$servername} JOIN :#twitter\n"
-     send_data ":#{$sername} MODE #twitter +ns\n"
+     send_data ":#{$servername} MODE #twitter +ns\n"
      names = ""
-     @twit.friends.each do |u| 
+     @cache = @twit.friends
+     @cache.each do |u| 
        names << " #{u.screen_name}"
      end
      rpl RPL_NAMREPLY, ":@twitter @#{@nickname}#{names}", "@ #twitter"
      rpl RPL_ENDOFNAMES, ":End of /NAMES list.", "#twitter"
-      @twit.friends.each do |u|
+      @cache.each do |u|
         privmsg(u.screen_name,CGI::unescapeHTML(u.status.text),"#twitter")
       end
   end
@@ -88,7 +88,7 @@ module TwitRC
       @twit.timeline(:friends, :since => Time.now.in_time_zone("Eastern Time (US & Canada)") - 5.minutes).each do |u|
         privmsg(u.user.screen_name,CGI::unescapeHTML(u.text), "#twitter")
       end
-      send_data "ping :#{$servername}"
+      send_data "ping :#{$servername}\n"
     end
   end
   
