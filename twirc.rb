@@ -43,7 +43,20 @@ module TwitRC
   end
   
   def irc_privmsg(message)
-    @twit.update(message.gsub(/^.*?:/,""))
+    tweet = message.gsub(/^.*?:/,"")
+    if message.length <= 140 then
+      @twit.update(tweet)
+    else
+      require 'open-uri'
+      privmsg "twitter", "#{@nickname}: your twit was not sent as it was over the 140 character limit (#{tweet.length} characters)", "#twitter"
+      begin
+        shrink = open("http://tweetshrink.com/shrink?format=string&text=#{CGI::escape(tweet)}").read
+        privmsg "twitter", "#{@nickname}: perhaps try \"#{shrink}\" (#{shrink.length} characters)", "#twitter" if shrink.length && shrink.length <= 140
+        puts "*** attempted to tweetshrink, got back #{shrink} (#{shrink.length} characters)" if $debug
+      rescue 
+        puts "*** attempted to tweetshrink tweet, but failed" if $debug
+      end
+    end
   end
 
   def irc_quit(message)
@@ -63,7 +76,7 @@ module TwitRC
       rpl RPL_NAMREPLY, ":@twitter @#{@nickname}#{names}", "@ #twitter"
       rpl RPL_ENDOFNAMES, ":End of /NAMES list.", "#twitter"
        @cache.each do |u|
-         privmsg(u.screen_name,CGI::unescapeHTML(u.status.text),"#twitter")
+         privmsg(u.screen_name,CGI::unescapeHTML(u.status.text.gsub(/\@#{@nickname}/, @nickname)),"#twitter")
        end
      end
   end
@@ -74,7 +87,7 @@ module TwitRC
   end
   
   def privmsg(sender, message, channel=nil)
-    send_data ":#{sender} PRIVMSG #{channel} :#{message}\n"
+    send_data ":#{sender} PRIVMSG%s :#{message}\n" % (" #{channel}" if !channel.nil?)
   end
   
   def do_twitter_connection()
@@ -93,7 +106,7 @@ module TwitRC
     time = Time.now
     EventMachine::add_periodic_timer(5.minutes) do
       @twit.timeline(:friends, :since => Time.now.in_time_zone("Eastern Time (US & Canada)") - 5.minutes).each do |u|
-        privmsg(u.user.screen_name,CGI::unescapeHTML(u.text), "#twitter")
+        privmsg(u.user.screen_name,CGI::unescapeHTML(u.text.gsub(/\@#{@nickname}/, @nickname)), "#twitter")
       end
       send_data "ping :#{$servername}\n"
     end
