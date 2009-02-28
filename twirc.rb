@@ -50,6 +50,24 @@ module TwitRC
     close_connection
   end
   
+  def irc_join(channel)
+    if channel == "#twitter" then
+      send_data ":#{@nickname} JOIN :#twitter\n"
+      rpl RPL_NOTOPIC, ":No topic is set", "#twitter"
+      send_data ":#{$servername} MODE #twitter +ns\n"
+      names = ""
+      @cache = @twit.friends
+      @cache.each do |u| 
+        names << " #{u.screen_name}"
+      end
+      rpl RPL_NAMREPLY, ":@twitter @#{@nickname}#{names}", "@ #twitter"
+      rpl RPL_ENDOFNAMES, ":End of /NAMES list.", "#twitter"
+       @cache.each do |u|
+         privmsg(u.screen_name,CGI::unescapeHTML(u.status.text),"#twitter")
+       end
+     end
+  end
+  
   def method_missing(id, *args)
     puts "*** this feature is currently unsupported (#{id})"
     pp args 
@@ -64,22 +82,11 @@ module TwitRC
      rpl RPL_MOTDSTART, ":- #{$servername} message of the day"
      rpl RPL_MOTD, ":- Thank you for using TwitRC"
      rpl RPL_ENDOFMOTD, ":End of /MOTD command"
-     send_data ":#{@nickname}!#{$servername} JOIN :#twitter\n"
-     send_data ":#{$servername} MODE #twitter +ns\n"
-     names = ""
-     @cache = @twit.friends
-     @cache.each do |u| 
-       names << " #{u.screen_name}"
-     end
-     rpl RPL_NAMREPLY, ":@twitter @#{@nickname}#{names}", "@ #twitter"
-     rpl RPL_ENDOFNAMES, ":End of /NAMES list.", "#twitter"
-      @cache.each do |u|
-        privmsg(u.screen_name,CGI::unescapeHTML(u.status.text),"#twitter")
-      end
+     irc_join("#twitter")
   end
 
   def rpl(num, message, channel=nil)
-    send_data ":#{$servername} #{num} #{@nickname} #{channel} #{message}\n"
+    send_data ":#{$servername} #{num} #{@nickname}%s #{message}\n" % (" #{channel} " if !channel.nil?)
   end
   
   def initialize()
