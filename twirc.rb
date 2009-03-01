@@ -44,7 +44,7 @@ module TwitRC
   
   def irc_privmsg(message)
     tweet = message.gsub(/^.*?:/,"")
-    if message.length <= 140 then
+    if tweet.length <= 140 then
       @twit.update(tweet)
     else
       require 'open-uri'
