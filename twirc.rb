@@ -1,4 +1,3 @@
-require 'rubygems'
 require 'eventmachine'
 require 'twitter'
 require 'activesupport'
