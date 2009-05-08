@@ -16,11 +16,11 @@ module TwitRC
     super
     puts "<< %s" % data if $debug
   end
-  
+
   def receive_data(data)
     data.match(/\n/) ? data.split(/\r?\n/).each{|x|process_data(x)}:process_data(data.strip)
   end
-  
+
   def process_data(data)
     puts ">> %s" % data if $debug
     # we assume that if there is no leading colon here, we're dealing with a command and call a method
@@ -28,20 +28,20 @@ module TwitRC
       self.send("irc_%s"%data.match(/^(.*?) (.*)$/)[1].downcase,$2)
     end
   end
-  
+
   def irc_pass(password)
     @password = password
   end
-  
+
   def irc_nick(nickname)
     @nickname = nickname
   end
-  
+
   def irc_user(username)
     @username = username.match(/^(.*?) /)[1]
     do_twitter_connection()
   end
-  
+
   def irc_privmsg(message)
     tweet = message.gsub(/^.*?:/,"")
     if tweet.length <= 140 then
@@ -53,7 +53,7 @@ module TwitRC
         shrink = open("http://tweetshrink.com/shrink?format=string&text=#{CGI::escape(tweet)}").read
         privmsg "twitter", "#{@nickname}: perhaps try \"#{shrink}\" (#{shrink.length} characters)", "#twitter" if shrink.length && shrink.length <= 140
         puts "*** attempted to tweetshrink, got back #{shrink} (#{shrink.length} characters)" if $debug
-      rescue 
+      rescue
         puts "*** attempted to tweetshrink tweet, but failed" if $debug
       end
     end
@@ -62,7 +62,7 @@ module TwitRC
   def irc_quit(message)
     close_connection
   end
-  
+
   def irc_join(channel)
     if channel == "#twitter" then
       send_data ":#{@nickname} JOIN :#twitter\n"
@@ -70,7 +70,7 @@ module TwitRC
       send_data ":#{$servername} MODE #twitter +ns\n"
       names = ""
       @cache = @twit.friends
-      @cache.each do |u| 
+      @cache.each do |u|
         names << " #{u.screen_name}"
       end
       rpl RPL_NAMREPLY, ":@twitter @#{@nickname}#{names}", "@ #twitter"
@@ -80,16 +80,16 @@ module TwitRC
        end
      end
   end
-  
+
   def method_missing(id, *args)
     puts "*** this feature is currently unsupported (#{id})"
-    pp args 
+    pp args
   end
-  
+
   def privmsg(sender, message, channel=nil)
     send_data ":#{sender} PRIVMSG%s :#{message}\n" % (" #{channel}" if !channel.nil?)
   end
-  
+
   def do_twitter_connection()
     @twit = Twitter::Base.new(@nickname, @password)
      rpl RPL_MOTDSTART, ":- #{$servername} message of the day"
@@ -101,7 +101,7 @@ module TwitRC
   def rpl(num, message, channel=nil)
     send_data ":#{$servername} #{num} #{@nickname}%s #{message}\n" % (" #{channel}" if !channel.nil?)
   end
-  
+
   def initialize()
     time = Time.now
     EventMachine::add_periodic_timer(5.minutes) do
@@ -111,7 +111,7 @@ module TwitRC
       send_data "ping :#{$servername}\n"
     end
   end
-  
+
 end
 
 EventMachine::run {

@@ -28,17 +28,8 @@ RPL_MOTD=372
                 #":- <text>"
 RPL_ENDOFMOTD=376
                 #":End of /MOTD command"
-                
+
 RPL_NAMREPLY=353
                 #"<channel> :[[@|+]<nick> [[@|+]<nick> [...]]]"
 RPL_ENDOFNAMES=366
                 #"<channel> :End of /NAMES list"
-
-
-
-
-
-
-
-
-

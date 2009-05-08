@@ -3,9 +3,9 @@ an early attempt at a IRC -> Twitter client.
 It's currently ugly, buggy and not recommended for use.
 
 TODO:
-	* joining a channel follows a search term
-	* direct messages in queries
-	* better support for more clients (ircd coverage)
-	* tests..
-	
+ * joining a channel follows a search term
+ * direct messages in queries
+ * better support for more clients (ircd coverage)
+ * tests..
+
 and more.
