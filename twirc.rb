@@ -3,7 +3,6 @@ require 'twitter'
 require 'activesupport'
 require 'lib/irc_numconst'
 
-$debug = true
 $servername = "twitter.irc"
 
 module TwitRC
@@ -13,7 +12,7 @@ module TwitRC
 
   def send_data(data)
     super
-    puts "<< %s" % data if $debug
+    puts "<< %s" % data if $DEBUG
   end
 
   def receive_data(data)
@@ -21,7 +20,7 @@ module TwitRC
   end
 
   def process_data(data)
-    puts ">> %s" % data if $debug
+    puts ">> %s" % data if $DEBUG
     # we assume that if there is no leading colon here, we're dealing with a command and call a method
     if data =~ /^:{0}/ then
       self.send("irc_%s"%data.match(/^(.*?) (.*)$/)[1].downcase,$2)
@@ -51,9 +50,9 @@ module TwitRC
       begin
         shrink = open("http://tweetshrink.com/shrink?format=string&text=#{CGI::escape(tweet)}").read
         privmsg "twitter", "#{@nickname}: perhaps try \"#{shrink}\" (#{shrink.length} characters)", "#twitter" if shrink.length && shrink.length <= 140
-        puts "*** attempted to tweetshrink, got back #{shrink} (#{shrink.length} characters)" if $debug
+        puts "*** attempted to tweetshrink, got back #{shrink} (#{shrink.length} characters)" if $DEBUG
       rescue
-        puts "*** attempted to tweetshrink tweet, but failed" if $debug
+        puts "*** attempted to tweetshrink tweet, but failed" if $DEBUG
       end
     end
   end
@@ -82,7 +81,7 @@ module TwitRC
 
   def method_missing(id, *args)
     puts "*** this feature is currently unsupported (#{id})"
-    pp args
+    pp args if $DEBUG
   end
 
   def privmsg(sender, message, channel=nil)
